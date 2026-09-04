@@ -1,0 +1,80 @@
+name: Historia de usuario
+description: Historia de usuario del backlog (HU-XX.X)
+title: "HU-XX.X - "
+labels: ["tipo:historia"]
+body:
+  - type: dropdown
+    id: epica
+    attributes:
+      label: Épica
+      options:
+        - "E0 - Infraestructura de datos"
+        - "E1 (OE1) - Caracterización y multimodalidad"
+        - "E2 (OE2) - Umbrales regionales"
+        - "E3 (OE3) - Clasificación del evento de validación"
+        - "E4 (OE4) - Evaluación de exactitud contra EMSR859"
+        - "E5 (OE5) - Documentación y cierre"
+    validations:
+      required: true
+
+  - type: textarea
+    id: historia
+    attributes:
+      label: Historia
+      description: "Formato: Como tesista, quiero..., para..."
+      placeholder: "Como tesista, quiero ..., para ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: tareas
+    attributes:
+      label: Tareas técnicas
+      description: Lista de tareas concretas necesarias para completar la historia
+      value: |
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: Condiciones verificables que definen la historia como terminada
+      value: |
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: dropdown
+    id: estimacion
+    attributes:
+      label: Estimación
+      options:
+        - "S (1-2 días)"
+        - "M (3-5 días)"
+        - "L (1-2 semanas)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad
+      options:
+        - "P0 - bloqueante"
+        - "P1 - necesario"
+        - "P2 - cierre"
+    validations:
+      required: true
+
+  - type: input
+    id: dependencias
+    attributes:
+      label: Depende de
+      description: Historias o issues que deben cerrarse antes que esta (opcional)
+      placeholder: "HU-01.2"
+    validations:
+      required: false

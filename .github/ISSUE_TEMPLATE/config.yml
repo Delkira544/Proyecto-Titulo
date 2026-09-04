@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Backlog completo
+    url: https://github.com/OWNER/REPO/blob/main/backlog.md
+    about: Ver el backlog completo con todas las épicas, historias y priorización

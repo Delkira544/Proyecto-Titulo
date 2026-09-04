@@ -1,0 +1,76 @@
+name: Spike
+description: Verificación técnica pendiente que condiciona historias posteriores
+title: "[SPIKE] HU-XX.X - "
+labels: ["tipo:spike", "prioridad:P0"]
+body:
+  - type: dropdown
+    id: epica
+    attributes:
+      label: Épica
+      options:
+        - "E0 - Infraestructura de datos"
+        - "E1 (OE1) - Caracterización y multimodalidad"
+        - "E2 (OE2) - Umbrales regionales"
+        - "E3 (OE3) - Clasificación del evento de validación"
+        - "E4 (OE4) - Evaluación de exactitud contra EMSR859"
+        - "E5 (OE5) - Documentación y cierre"
+    validations:
+      required: true
+
+  - type: textarea
+    id: pregunta
+    attributes:
+      label: Pregunta a responder
+      description: Qué se necesita saber antes de continuar y por qué está bloqueando otras historias
+    validations:
+      required: true
+
+  - type: textarea
+    id: historia
+    attributes:
+      label: Historia
+      placeholder: "Como tesista, quiero ..., para ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: tareas
+    attributes:
+      label: Tareas técnicas
+      value: |
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: Qué evidencia deja la verificación (documento, tabla, decisión registrada)
+      value: |
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: escenarios
+    attributes:
+      label: Escenarios posibles y su impacto
+      description: Qué historias hay que reformular según el resultado de este spike
+      placeholder: |
+        Escenario A: ...
+        Escenario B: ...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: estimacion
+    attributes:
+      label: Estimación
+      options:
+        - "S (1-2 días)"
+        - "M (3-5 días)"
+        - "L (1-2 semanas)"
+    validations:
+      required: true
