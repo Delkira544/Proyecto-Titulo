@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "biobio-severidad-umbral"
+version = "0.1.0"
+description = "Descripción breve de mi proyecto"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Christian Verdugo Troncoso", email = "cverdugo2022@alu.uct.cl"}
+]
+dependencies = [
+    "geopandas>=1.1.4",
+    "matplotlib"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+]
+
+[project.scripts]
