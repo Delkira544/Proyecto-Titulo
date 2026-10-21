@@ -1,0 +1,14 @@
+# Diccionario de armonización: nombre ESTÁNDAR -> posibles nombres ORIGINALES (CONAF).
+# Se usa el primero que exista (sin distinguir mayúsculas ni tildes).
+# Alias tomados de los esquemas reales 2020_2021–2024_2025 (ogrinfo); ver inventario_shapefiles.csv.
+# PROVISORIO: confirmar con la metadata de CONAF el significado y la unidad de cada campo.
+obligatorias: [fecha_inicio]   # id_conaf es opcional: 2024_2025 no lo trae (se usa fila-N)
+columnas:
+  id_conaf: [ID, NUMERO_REG, IDINC, ID_INCENDIO, N_INCENDIO]   # 2022_2023 no trae ID: NUMERO_REG es el correlativo
+  fecha_inicio: [FECHA_INI, FH_INICIO, FECHA_INICIO, F_INI, FECHA]
+  fecha_termino: [FECHA_TER, FH_EXTINC, FECHA_TERMINO]
+  superficie_ha_conaf: [SUPERFICIE, SUP, SUP_HA, HECTAREAS]
+  codreg: [CODREG]
+  region: [REGION, NOM_REGION]
+  comuna: [COMUNA, NOM_COMUNA]
+  nombre: [NOM_INCEN, NOMBRE, NOM_INCENDIO]

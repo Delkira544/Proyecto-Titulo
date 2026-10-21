@@ -5,21 +5,68 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "biobio-severidad-umbral"
 version = "0.1.0"
-description = "Descripción breve de mi proyecto"
+description = "Transferibilidad de umbrales de severidad de incendios (Key & Benson, 2006) al Biobío, Chile, con Sentinel-2 L2A"
 readme = "README.md"
-requires-python = ">=3.10"
+# Versión fija del proyecto (ver README). No cambiar sin avisar.
+requires-python = "==3.14.*"
 authors = [
     {name = "Christian Verdugo Troncoso", email = "cverdugo2022@alu.uct.cl"}
 ]
 dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
     "geopandas>=1.1.4",
-    "matplotlib"
+    "shapely",
+    "pyproj",
+    "rasterio",
+    "scikit-image",
+    "scikit-learn",  # solo utilidades estadísticas, no clasificación
+    "matplotlib",
+    "earthengine-api",
+    "snakemake",
 ]
 
-[project.optional-dependencies]
+# Grupo de desarrollo (PEP 735): `uv sync` lo instala por defecto.
+[dependency-groups]
 dev = [
+    "pyright>=1.1.414",
     "pytest",
-    "black",
+    "ruff",
 ]
 
-[project.scripts]
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+# `snakemake` lo inyecta Snakemake en los scripts invocados con `script:`
+builtins = ["snakemake"]
+
+[tool.ruff.lint]
+# E/W: PEP 8; F: errores; I: orden de imports; B: bugbear; UP: modernización
+select = ["E", "W", "F", "I", "B", "UP"]
+
+[tool.pyright]
+typeCheckingMode = "basic"
+reportUndefinedVariable = "none"
+reportMissingImports = "warning"
+ignore = ["workflow/scripts/legacy"]
+exclude = ["**/node_modules", "**/__pycache__", ".venv"]
+venvPath = "."
+venv = ".venv"
+
+# `uv check` usa ty. Los `cast` ayudan a pyright con los stubs de pandas.
+[tool.ty.rules]
+redundant-cast = "ignore"
+
+# `snakemake` lo inyecta Snakemake en los scripts invocados con `script:`
+[[tool.ty.overrides]]
+include = ["workflow/scripts/**"]
+
+[tool.ty.overrides.rules]
+unresolved-reference = "ignore"

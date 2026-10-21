@@ -220,8 +220,13 @@ __marimo__/
 # Documentos de papers
 documentos/
 
-data/
+resources/raw/
 
 
 # Archivos de salida
-outputs/
+results/
+
+# Snakemake
+.snakemake/
+logs/
+benchmarks/

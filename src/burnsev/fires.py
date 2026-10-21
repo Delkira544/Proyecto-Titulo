@@ -1,9 +1,11 @@
 import logging
 import unicodedata
 from pathlib import Path
+from typing import cast
 
 import geopandas as gpd
 import pandas as pd
+from pandas._libs.tslibs.nattype import NaTType
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +30,8 @@ _MONTHS_ES = {
 }
 
 
-def load_fire_poligons(file_path: str) -> gpd.GeoDataFrame:
+def load_fire_poligons(file_path: str | Path) -> gpd.GeoDataFrame | None:
+    """Lee una capa de incendios; devuelve ``None`` si la lectura falla."""
     try:
         fire_polygons = gpd.read_file(file_path, encoding="utf-8")
         return fire_polygons
@@ -37,7 +40,7 @@ def load_fire_poligons(file_path: str) -> gpd.GeoDataFrame:
         return None
 
 
-def _parse_es_date(date_str: str) -> pd.Timestamp:
+def parse_es_date(date_str: str) -> pd.Timestamp | NaTType:
     """Parse a Spanish-format date string like '25-ene-2024 15:10' -> 2024-01-25."""
     try:
         parts = date_str.strip().split("-")
@@ -45,7 +48,7 @@ def _parse_es_date(date_str: str) -> pd.Timestamp:
         month = _MONTHS_ES.get(parts[1][:3].lower(), None)
         year = int(parts[2].split()[0])
         return pd.Timestamp(year=year, month=month, day=day)
-    except (ValueError, IndexError, TypeError):
+    except ValueError, IndexError, TypeError:
         return pd.NaT
 
 
@@ -69,11 +72,11 @@ def _normalize_table(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
             # Si es datetime nativo, solo normalizar (quitar hora)
             if pd.api.types.is_datetime64_any_dtype(gdf[col]):
                 gdf[col] = gdf[col].dt.normalize()
-            # Si es object (string), parsear con _parse_es_date y normalizar
+            # Si es object (string), parsear con parse_es_date y normalizar
             else:
                 gdf[col] = (
                     gdf[col]
-                    .apply(lambda x: _parse_es_date(str(x)) if pd.notna(x) else pd.NaT)
+                    .apply(lambda x: parse_es_date(str(x)) if pd.notna(x) else pd.NaT)
                     .dt.normalize()
                 )
 
@@ -89,7 +92,7 @@ def normalize_region(region: str) -> str:
     try:
         cleaned.encode("latin-1")
         cleaned = cleaned.encode("latin-1").decode("utf-8")
-    except (UnicodeDecodeError, UnicodeEncodeError):
+    except UnicodeDecodeError, UnicodeEncodeError:
         pass
 
     normalized = unicodedata.normalize("NFD", cleaned)
@@ -111,7 +114,7 @@ def filter_by_region(
 
     target = normalize_region(region)
     mask = gdf["REGION"].apply(lambda r: normalize_region(str(r)) == target)
-    return gdf[mask].copy()
+    return cast(gpd.GeoDataFrame, gdf[mask].copy())
 
 
 def load_fire_poligons_in_interval(

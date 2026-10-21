@@ -1,0 +1,63 @@
+# Fuente única de parámetros del análisis (ADR-0017). Sin rutas absolutas.
+# Los valores marcados PROVISORIO no están definidos aún (CLAUDE.md §4): no darlos por cerrados.
+
+proyecto:
+  nombre: transferibilidad-umbrales-severidad-biobio
+  prefijo_id: bio                  # fire_id = {prefijo_id}{año_inicio_temporada}-{correlativo}, ej. bio2022-007 (correlativo por temporada: estable al agregar temporadas)
+
+rutas:
+  raw_incendios: resources/raw/conaf/incendios   # una subcarpeta por temporada (ej. 2020_2021/)
+  raw_conaf: resources/raw/conaf                 # raíz de datos CONAF (para el manifiesto)
+  external_meta: resources/external_meta
+  interim: results/interim
+  processed: results/processed
+  results: results
+  logs: logs
+  esquema_columnas: config/schema_columns.yaml
+
+# Temporadas con shapefile disponible (carpetas dentro de rutas.raw_incendios).
+# 2019_2020 contiene incendios de ene–jun 2020, que caen en la ventana de calibración.
+# 2025_2026 (evento de validación, enero 2026) no tiene perímetros CONAF disponibles.
+temporadas: ["2019_2020", "2020_2021", "2021_2022", "2022_2023", "2023_2024", "2024_2025"]   # entre comillas: YAML lee 2020_2021 como número
+
+# Procedencia de los datos crudos (manifiesto, CLAUDE.md §8.2). Clave = subcarpeta de rutas.raw_conaf.
+# Fuente y URL según resources/raw/conaf/README.md; fecha de descarga, versión y licencia
+# no están documentadas: el manifiesto las marca [POR VERIFICAR].
+fuentes_raw:
+  incendios:
+    fuente: CONAF (perímetros de incendios forestales, vía IDE Minagri)
+    url: https://ide.minagri.gob.cl/descarga-de-capas-shp/desastres/
+  sit:
+    fuente: CONAF (Sistema de Información Territorial)
+    url: https://sit.conaf.cl/
+
+ingesta:
+  crs_trabajo: EPSG:32719          # PROVISORIO: UTM 19S (CRS nativo de los perímetros CONAF); CRS único del proyecto sin definir
+  encoding_si_falta_cpg: utf-8     # PROVISORIO: confirmar con la metadata de CONAF
+
+seleccion:
+  periodos:                        # filtro por FECHA DEL INCENDIO, no por carpeta de temporada
+    calibracion: ["2020-01-01", "2025-12-31"]   # ADR-0012
+    validacion: ["2026-01-01", "2026-01-31"]    # PROVISORIO: ventana del evento de enero 2026
+  superficie_min_ha: 5             # PROVISORIO: justificar (tamaño de píxel S2, píxeles mixtos)
+  region_codigo: 8                 # CODREG de CONAF para el Biobío (la columna REGION de texto es inconsistente)
+  region_valores_aceptados: [biobio]   # respaldo cuando CODREG falta; se compara sin tildes ni prefijo "R."
+
+calidad:
+  nubosidad_max_pct: 10            # PROVISORIO: sobre el perímetro, no sobre la escena
+  requiere_pre_y_post: true
+
+sensor:
+  coleccion_gee: COPERNICUS/S2_SR_HARMONIZED   # ADR-0004
+  bandas_gee: [B3, B4, B8, B8A, B11, B12, SCL] # PROVISORIO: B8 vs B8A vs B12 para el NBR sin definir
+  resolucion_m: 20
+escenas:
+  ventana_pre_dias: 30             # PROVISORIO
+  ventana_post_dias: 30            # PROVISORIO
+indices:
+  severidad: [dnbr, rdnbr, bai, mirbi]
+  apoyo: [ndvi, ndbi]
+umbrales:
+  metodos: [otsu_multinivel, kde_minimo]
+  estrategias: [internacional, regional, ad_hoc]
+semilla_aleatoria: 20260101

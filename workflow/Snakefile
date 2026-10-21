@@ -1,0 +1,28 @@
+# ============================================================
+# workflow/Snakefile — punto de entrada del flujo (ADR-0018)
+# Ejecutar SIEMPRE desde la raíz del repo, con uv (o con el .venv activo):
+#     uv run snakemake -n          # simulacro (dry-run): no ejecuta nada
+#     uv run snakemake -c 4        # ejecuta con 4 núcleos
+# Cada etapa nueva = un archivo workflow/rules/NN_etapa.smk + un include aquí.
+# ============================================================
+from snakemake.utils import validate
+
+configfile: "config/config.yaml"
+validate(config, "../config/config.schema.yaml")
+
+include: "rules/common.smk"
+include: "rules/01_ingesta.smk"        # inventario + manifiesto sha256 de los datos crudos
+include: "rules/02_catalogo.smk"       # catálogo dentro/fuera + motivo
+# include: "rules/03_escenas.smk"      # GEE: escenas S2 pre/post y nubosidad por fire_id
+# include: "rules/04_indices.smk"      # dNBR, RdNBR, BAI, MIRBI, NDVI, NDBI
+# include: "rules/05_umbrales.smk"     # Otsu multinivel y KDE
+# include: "rules/06_validacion.smk"   # EMSR859 / GeoCBI
+
+
+rule all:
+    """Objetivo final: crece a medida que se agregan etapas."""
+    input:
+        f"{RES}/catalogo/catalogo_incendios.csv",
+        f"{RES}/catalogo/fires.tsv",
+        f"{RES}/catalogo/inventario_shapefiles.csv",
+        f"{EXT_META}/manifest.tsv",
