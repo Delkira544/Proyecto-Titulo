@@ -44,16 +44,30 @@ seleccion:
   region_valores_aceptados: [biobio]   # respaldo cuando CODREG falta; se compara sin tildes ni prefijo "R."
 
 calidad:
-  nubosidad_max_pct: 10            # PROVISORIO: sobre el perímetro, no sobre la escena
-  requiere_pre_y_post: true
+  # Nubosidad medida DENTRO del perímetro con la banda SCL, no con CLOUDY_PIXEL_PERCENTAGE (que es de toda la escena).
+  scl_clases_malas: [1, 3, 8, 9, 10]   # saturado, sombra de nube, nube media, nube alta, cirro. Se excluye la clase 7 (mezcla píxeles normales). Decisión de diseño; sin fuente académica verificada [POR VERIFICAR]
+  nubosidad_max_pct: 10            # % máximo de píxeles malos tolerado por perímetro (RF-01, fijado por el usuario)
+  cobertura_min_pct: 95            # PROVISORIO: % mínimo del perímetro con dato (SCL clase 0 queda enmascarada en GEE); propuesta sin respaldo
+  requiere_pre_y_post: true        # un incendio es usable solo si hay escena válida antes y después
 
 sensor:
   coleccion_gee: COPERNICUS/S2_SR_HARMONIZED   # ADR-0004
-  bandas_gee: [B3, B4, B8, B8A, B11, B12, SCL] # PROVISORIO: B8 vs B8A vs B12 para el NBR sin definir
+  bandas_gee: [B2, B3, B4, B8, B8A, B11, B12, SCL] # B2 solo para miniaturas RGB. PROVISORIO: B8 vs B8A vs B12 para el NBR sin definir
   resolucion_m: 20
 escenas:
-  ventana_pre_dias: 30             # PROVISORIO
-  ventana_post_dias: 30            # PROVISORIO
+  # Pre: días ANTES de fecha_inicio. Post: desde fecha_termino (control CONAF) en adelante.
+  ventana_pre_dias: 30             # PROVISORIO: máximo a explorar
+  ventana_post_dias: 30            # PROVISORIO: máximo a explorar
+  # Exploración incremental: cada paso consulta solo los días nuevos (0-10, 10-20, 20-30)
+  # y se detiene en cuanto una rebanada trae una escena usable. Acota las consultas a GEE.
+  exploracion_pasos_dias: [10, 20, 30]
+  # Una "escena" es una fecha de adquisición: las teselas del mismo día se combinan en un mosaico SCL
+  # antes de medir, porque un perímetro puede quedar repartido entre dos teselas.
+gee:
+  simplificar_m: 20                # tolerancia (m, CRS de trabajo) para simplificar el perímetro enviado a GEE; = resolución del SCL
+  miniatura_px: 512                # lado máximo de las miniaturas de los incendios usables
+  tile_scale: 4                    # tileScale de reduceRegion (memoria de GEE; no afecta el resultado)
+  proyecto_env: EARTHENGINE_PROJECT   # variable de entorno con el proyecto de GEE (nunca en el repo)
 indices:
   severidad: [dnbr, rdnbr, bai, mirbi]
   apoyo: [ndvi, ndbi]

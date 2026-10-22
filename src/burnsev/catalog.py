@@ -300,3 +300,120 @@ def build_fires_table(catalog: pd.DataFrame) -> pd.DataFrame:
     ).copy()
     table["role"] = "calibracion"
     return table.reset_index(drop=True)
+
+
+def build_perimeters(
+    frames: Mapping[str, gpd.GeoDataFrame],
+    catalog: pd.DataFrame,
+    *,
+    columns: Mapping[str, Sequence[str]],
+    required: Sequence[str],
+    region_code: int,
+    region_names: Sequence[str],
+    crs: str,
+) -> gpd.GeoDataFrame:
+    """Perímetros de los incendios 'dentro' con su ``fire_id`` (sin reparar).
+
+    Repite la armonización y el filtro de región de :func:`build_catalog` (los
+    ``id_conaf`` se repiten entre regiones) y une por
+    (``temporada``, ``id_conaf``). Los perímetros solo delimitan; no son verdad
+    de terreno. Las geometrías inválidas se conservan tal cual.
+
+    Raises:
+        ValueError: si algún incendio 'dentro' no encuentra su geometría.
+    """
+    inside = cast(pd.DataFrame, catalog[catalog["estado"] == "dentro"])
+    parts = []
+    for season, raw in frames.items():
+        table = harmonize_columns(raw, columns, required)
+        table["id_conaf"] = fill_missing_ids(_column(table, "id_conaf"))
+        table["temporada"] = season
+        keep = in_region(
+            _column(table, "codreg"),
+            _column(table, "region"),
+            region_code,
+            region_names,
+        )
+        table = cast(gpd.GeoDataFrame, table[keep])  # mismo filtro que el catálogo
+        parts.append(table[["temporada", "id_conaf", table.geometry.name]])
+    geoms = cast(pd.DataFrame, pd.concat(parts, ignore_index=True))
+    keys = cast(pd.DataFrame, inside[["fire_id", "temporada", "id_conaf"]])
+    merged = keys.merge(geoms, on=["temporada", "id_conaf"], how="left")
+    missing = merged[merged.geometry.isna()]
+    if len(missing) or len(merged) != len(inside):
+        raise ValueError(
+            f"Perímetros no resueltos o duplicados para: {missing['fire_id'].tolist()}"
+        )
+    result = gpd.GeoDataFrame(merged[["fire_id"]], geometry=merged.geometry, crs=crs)
+    return cast(gpd.GeoDataFrame, result.sort_values("fire_id", ignore_index=True))
+
+
+def apply_cloud_review(catalog: pd.DataFrame, review: pd.DataFrame) -> pd.DataFrame:
+    """Marca cada incendio como ``usable`` o ``excluido`` con su motivo.
+
+    Args:
+        catalog: salida de :func:`build_catalog` (``estado`` dentro/fuera).
+        review: una fila por incendio 'dentro' con ``fire_id``, ``estado_uso``,
+            ``motivo_codigo``, ``escena_pre``, ``escena_post``,
+            ``nubosidad_pre_pct`` y ``nubosidad_post_pct``.
+
+    Returns:
+        Catálogo con ``estado`` en {usable, excluido}, ``motivo`` legible,
+        ``motivo_codigo`` y las columnas de nubosidad rellenas. Los 'fuera'
+        pasan a ``excluido`` conservando su motivo. No repara geometrías.
+
+    Raises:
+        ValueError: si falta la revisión de algún incendio 'dentro'.
+    """
+    inside_ids = set(catalog.loc[catalog["estado"] == "dentro", "fire_id"])
+    missing = inside_ids - set(review["fire_id"])
+    if missing:
+        raise ValueError(f"Sin revisión de nubosidad: {sorted(missing)}")
+    renamed = cast(
+        pd.DataFrame,
+        review[
+            [
+                "fire_id",
+                "estado_uso",
+                "motivo_codigo",
+                "escena_pre",
+                "escena_post",
+                "nubosidad_pre_pct",
+                "nubosidad_post_pct",
+            ]
+        ],
+    ).rename(
+        columns={
+            "escena_pre": "_escena_pre",
+            "escena_post": "_escena_post",
+            "nubosidad_pre_pct": "_pre",
+            "nubosidad_post_pct": "_post",
+        }
+    )
+    out = catalog.merge(renamed, on="fire_id", how="left")
+    reviewed = out["estado_uso"].notna()
+    note = (~out["geometria_valida"].astype(bool)).map(
+        lambda bad: "; geometría inválida sin reparar" if bad else ""
+    )
+    out["motivo_codigo"] = out["motivo_codigo"].where(reviewed, out["motivo"])
+    out["motivo"] = out["motivo_codigo"].where(~reviewed, out["motivo_codigo"] + note)
+    out["estado"] = out["estado_uso"].where(reviewed, "excluido")
+    out["nubosidad_revisada"] = reviewed
+    for col, src in (
+        ("escena_pre", "_escena_pre"),
+        ("escena_post", "_escena_post"),
+        ("nubosidad_pre_pct", "_pre"),
+        ("nubosidad_post_pct", "_post"),
+    ):
+        out[col] = out[src]
+    columns = [*CATALOG_COLUMNS[:13], "motivo_codigo", *CATALOG_COLUMNS[13:]]
+    return cast(pd.DataFrame, out[columns])
+
+
+def summarize_usability(catalog: pd.DataFrame) -> pd.DataFrame:
+    """Número de incendios por ``estado`` y ``motivo_codigo`` (usables primero)."""
+    sizes = catalog.groupby(["estado", "motivo_codigo"]).size()
+    counts = pd.DataFrame({"n": sizes}).reset_index()
+    counts["orden"] = (counts["estado"] != "usable").astype(int)
+    counts = counts.sort_values(["orden", "n"], ascending=[True, False])
+    return counts.drop(columns="orden").reset_index(drop=True)

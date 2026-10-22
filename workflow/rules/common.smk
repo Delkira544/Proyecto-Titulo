@@ -1,5 +1,6 @@
 # Utilidades compartidas por todas las reglas.
 from pathlib import Path
+import pandas as pd
 from snakemake.exceptions import WorkflowError
 
 RAW_INC = config["rutas"]["raw_incendios"]
@@ -36,3 +37,10 @@ def shapefiles_crudos(wildcards=None):
 def archivos_crudos_conaf(wildcards=None):
     """Todos los archivos bajo rutas.raw_conaf (para el manifiesto sha256)."""
     return sorted(str(p) for p in Path(RAW_CONAF).rglob("*") if p.is_file())
+
+
+def stats_de_incendios(wildcards):
+    """Un archivo de estadísticas por incendio 'dentro' (lista leída de fires.tsv)."""
+    fires = checkpoints.build_fire_catalog.get().output.fires
+    ids = pd.read_csv(fires, sep="\t")["fire_id"]
+    return [f"{INT}/escenas/{fire_id}_stats.csv" for fire_id in ids]

@@ -1,6 +1,6 @@
 # Etapa 02: catálogo de incendios de calibración con estado dentro/fuera y motivo.
 
-rule build_fire_catalog:
+checkpoint build_fire_catalog:
     """Armoniza las temporadas, filtra Biobío/fechas/superficie y asigna fire_id."""
     input:
         shp=shapefiles_crudos,

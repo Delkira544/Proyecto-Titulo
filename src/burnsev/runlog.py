@@ -6,7 +6,15 @@ import sys
 from importlib import metadata
 from pathlib import Path
 
-KEY_PACKAGES = ("geopandas", "pandas", "numpy", "pyproj", "pyogrio", "shapely")
+KEY_PACKAGES = (
+    "geopandas",
+    "pandas",
+    "numpy",
+    "pyproj",
+    "pyogrio",
+    "shapely",
+    "earthengine-api",
+)
 
 
 def setup_logging(log_file: str | Path, params: dict | None = None) -> logging.Logger:

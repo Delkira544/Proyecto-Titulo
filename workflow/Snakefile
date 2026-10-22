@@ -13,7 +13,7 @@ validate(config, "../config/config.schema.yaml")
 include: "rules/common.smk"
 include: "rules/01_ingesta.smk"        # inventario + manifiesto sha256 de los datos crudos
 include: "rules/02_catalogo.smk"       # catálogo dentro/fuera + motivo
-# include: "rules/03_escenas.smk"      # GEE: escenas S2 pre/post y nubosidad por fire_id
+include: "rules/03_escenas.smk"        # GEE: escenas S2 pre/post y nubosidad por fire_id
 # include: "rules/04_indices.smk"      # dNBR, RdNBR, BAI, MIRBI, NDVI, NDBI
 # include: "rules/05_umbrales.smk"     # Otsu multinivel y KDE
 # include: "rules/06_validacion.smk"   # EMSR859 / GeoCBI
@@ -26,3 +26,5 @@ rule all:
         f"{RES}/catalogo/fires.tsv",
         f"{RES}/catalogo/inventario_shapefiles.csv",
         f"{EXT_META}/manifest.tsv",
+        f"{EXT_META}/fires_usability.csv",
+        f"{EXT_META}/fires_usability_summary.csv",

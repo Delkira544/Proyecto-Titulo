@@ -12,6 +12,7 @@ from burnsev.catalog import (
     assign_fire_ids,
     build_catalog,
     build_fires_table,
+    build_perimeters,
     classify_fires,
     compute_area_ha,
     fill_missing_ids,
@@ -193,3 +194,31 @@ def test_build_catalog_is_deterministic():
 def test_fill_missing_ids_uses_file_position():
     ids = pd.Series([pd.NA, 7.0, pd.NA], dtype="object")
     assert fill_missing_ids(ids).tolist() == ["fila-1", "7", "fila-3"]
+
+
+def test_build_perimeters_ignora_id_repetido_en_otra_region():
+    # El mismo ID aparece en el Biobío y en otra región (pasa en CONAF 2022_2023).
+    raw = gpd.GeoDataFrame(
+        {
+            "ID": [801, 801],
+            "FECHA_INI": ["2-feb-2023", "17-feb-2023"],
+            "CODREG": ["08", "09"],
+            "REGION": ["Biobío", "Araucanía"],
+        },
+        geometry=[square(1000), square(1000, x0=5000)],
+        crs=CRS,
+    )
+    kwargs: dict[str, Any] = dict(
+        columns=COLUMNS, required=REQUIRED, region_code=8, region_names=["biobio"]
+    )
+    catalog = build_catalog(
+        {"2022_2023": raw},
+        crs=CRS,
+        window=("2020-01-01", "2025-12-31"),
+        min_area_ha=5,
+        id_prefix="bio",
+        **kwargs,
+    )
+    perimeters = build_perimeters({"2022_2023": raw}, catalog, crs=CRS, **kwargs)
+    assert perimeters["fire_id"].tolist() == ["bio2022-001"]
+    assert perimeters.geometry.iloc[0].bounds[0] == 0  # la geometría del Biobío
