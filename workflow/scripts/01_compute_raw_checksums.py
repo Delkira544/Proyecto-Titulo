@@ -36,9 +36,9 @@ for name in snakemake.input:
             "archivo": path.as_posix(),
             "fuente": source.get("fuente", PENDING),
             "url": source.get("url", PENDING),
-            "fecha_descarga": PENDING,
-            "version_producto": PENDING,
-            "licencia": PENDING,
+            "fecha_descarga": source.get("fecha_descarga", PENDING),
+            "version_producto": source.get("version_producto", PENDING),
+            "licencia": source.get("licencia", PENDING),
             "sha256": sha256_of(path),
         }
     )

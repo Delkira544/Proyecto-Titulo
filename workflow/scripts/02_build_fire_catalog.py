@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 import yaml
 
 from burnsev.catalog import build_catalog, build_fires_table
@@ -19,6 +20,18 @@ frames = {
     for shp in snakemake.input.shp
 }
 
+points = (
+    pd.concat(
+        [
+            pd.DataFrame(gpd.read_file(shp, encoding=params.encoding))
+            for shp in snakemake.input.points
+        ],
+        ignore_index=True,
+    )
+    if snakemake.input.points
+    else None
+)
+
 catalog = build_catalog(
     frames,
     columns=schema["columnas"],
@@ -29,6 +42,8 @@ catalog = build_catalog(
     window=tuple(params.window),
     min_area_ha=params.min_area_ha,
     id_prefix=params.id_prefix,
+    points=points,
+    points_area_tol_pct=params.points_area_tol_pct,
 )
 
 logger.info(

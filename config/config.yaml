@@ -8,12 +8,14 @@ proyecto:
 rutas:
   raw_incendios: resources/raw/conaf/incendios   # una subcarpeta por temporada (ej. 2020_2021/)
   raw_conaf: resources/raw/conaf                 # raíz de datos CONAF (para el manifiesto)
+  raw_incendios_puntos: resources/raw/conaf/incendios_points   # puntos de inicio; SOLO completan fechas faltantes de los perímetros
   external_meta: resources/external_meta
   interim: results/interim
   processed: results/processed
   results: results
   logs: logs
   esquema_columnas: config/schema_columns.yaml
+  catastro_sit: resources/raw/conaf/sit/sit_2024_biobio.shp   # catastro de uso de suelo CONAF (SIT 2024); fecha de descarga/versión [POR VERIFICAR]
 
 # Temporadas con shapefile disponible (carpetas dentro de rutas.raw_incendios).
 # 2019_2020 contiene incendios de ene–jun 2020, que caen en la ventana de calibración.
@@ -27,9 +29,21 @@ fuentes_raw:
   incendios:
     fuente: CONAF (perímetros de incendios forestales, vía IDE Minagri)
     url: https://ide.minagri.gob.cl/descarga-de-capas-shp/desastres/
+    fecha_descarga: 2026/09/04          # conservada del manifiesto previo (commit f6897ba); el script anterior la ponía como [POR VERIFICAR]
+    version_producto: Datos actualizados en 2022   # dada por el usuario: corresponde a la fecha de modificación del archivo, no a una versión publicada por CONAF
+    licencia: No proporcionada          # el usuario indica que CONAF no la entregó
+  incendios_points:                     # puntos de inicio de incendios; solo completan fechas faltantes
+    fuente: CONAF (puntos de inicio de incendios forestales, vía IDE Minagri)   # mismo sitio que los perímetros, según el usuario
+    url: https://ide.minagri.gob.cl/descarga-de-capas-shp/desastres/
+    fecha_descarga: 2026/09/10          # dada por el usuario
+    version_producto: Datos actualizados en 2022   # dada por el usuario: fecha de modificación del archivo
+    licencia: No proporcionada
   sit:
     fuente: CONAF (Sistema de Información Territorial)
     url: https://sit.conaf.cl/
+    fecha_descarga: 2026/09/08          # dada por el usuario; formato igual al del manifiesto previo (AAAA/MM/DD)
+    version_producto: Versión actualizada a 2025   # texto dado por el usuario; el archivo se llama sit_2024_biobio y su columna ORG_2024: inconsistencia sin resolver
+    licencia: No proporcionada          # el usuario indica que CONAF no la entregó
 
 ingesta:
   crs_trabajo: EPSG:32719          # PROVISORIO: UTM 19S (CRS nativo de los perímetros CONAF); CRS único del proyecto sin definir
@@ -39,6 +53,7 @@ seleccion:
   periodos:                        # filtro por FECHA DEL INCENDIO, no por carpeta de temporada
     calibracion: ["2020-01-01", "2025-12-31"]   # ADR-0012
     validacion: ["2026-01-01", "2026-01-31"]    # PROVISORIO: ventana del evento de enero 2026
+  puntos_tolerancia_superficie_pct: 5   # PROVISORIO: diferencia máx. de superficie punto vs perímetro para aceptar el emparejamiento (en los 8 casos de 2019_2020 la diferencia es <= 2 %)
   superficie_min_ha: 5             # PROVISORIO: justificar (tamaño de píxel S2, píxeles mixtos)
   region_codigo: 8                 # CODREG de CONAF para el Biobío (la columna REGION de texto es inconsistente)
   region_valores_aceptados: [biobio]   # respaldo cuando CODREG falta; se compara sin tildes ni prefijo "R."
@@ -50,6 +65,10 @@ calidad:
   cobertura_min_pct: 95            # PROVISORIO: % mínimo del perímetro con dato (SCL clase 0 queda enmascarada en GEE); propuesta sin respaldo
   requiere_pre_y_post: true        # un incendio es usable solo si hay escena válida antes y después
 
+  minimo_estrato:                  # PROVISORIO: umbrales de suficiencia por estrato (RNF-03, supuesto S6); sin fuente académica verificada
+    pixeles: 3000                  # píxeles analizables agrupados. Origen: simulación propia (Otsu 3 clases sobre dNBR forestal): desv. est. del umbral ~0,007 con 3000 px
+    incendios: 5                   # incendios distintos que aportan al estrato. Valor propuesto por Claude, no por una fuente
+    pixeles_por_incendio: 1000     # un incendio cuenta como aportante si tiene al menos esta cantidad de píxeles del estrato
 sensor:
   coleccion_gee: COPERNICUS/S2_SR_HARMONIZED   # ADR-0004
   bandas_gee: [B2, B3, B4, B8, B8A, B11, B12, SCL] # B2 solo para miniaturas RGB. PROVISORIO: B8 vs B8A vs B12 para el NBR sin definir
@@ -71,6 +90,46 @@ gee:
 indices:
   severidad: [dnbr, rdnbr, bai, mirbi]
   apoyo: [ndvi, ndbi]
+indices_export:
+  # Exportación de índices desde GEE (HU de exportación). Escala de reflectancia: [0, 1].
+  bandas:                          # PROVISORIO salvo nir (elegida por el usuario: B8A con B12, ambas de 20 m)
+    rojo: B4
+    nir: B8A
+    swir1: B11
+    swir2: B12
+  escala_reflectancia: 0.0001      # DN / 10000 (catálogo GEE de S2_SR_HARMONIZED)
+  # S2_SR_HARMONIZED ya resta el desplazamiento de 1000 DN de las escenas con baseline >= 04.00
+  # (ADR-0004). NO se aplica de nuevo aquí; solo se registra el baseline de cada escena.
+  convencion_nbr: "[-1, 1]"        # NBR sin multiplicar por 1000; dNBR y RdNBR quedan en esa escala (Key & Benson, 2006; Miller & Thode, 2007)
+  rdnbr_eps_nbr_pre: 0.001         # PROVISORIO: |NBR_pre| menor que esto da RdNBR sin dato (evita dividir por ~0)
+  bai:                             # BAI = 1 / ((rojo_ref - rojo)^2 + (nir_ref - nir)^2). Fuente: Chuvieco et al. (2002) [POR VERIFICAR contra el artículo original]
+    rojo_ref: 0.1
+    nir_ref: 0.06
+  mirbi:                           # MIRBI = a*SWIR2 - b*SWIR1 + c. Fuente: Trigg & Flasse (2001) [POR VERIFICAR contra el artículo original]
+    a: 10.0
+    b: 9.8
+    c: 2.0
+  bai_mirbi_escena: post           # PROVISORIO: BAI y MIRBI se calculan sobre la escena post (solo 'post' implementado)
+  buffer_m: 100                    # PROVISORIO: margen alrededor del perímetro, para incluir área no quemada de contexto
+  crs_export: EPSG:32719           # PROVISORIO: igual a ingesta.crs_trabajo (CRS único del proyecto sin definir)
+  nodata: -9999.0
+  exclusion_borde_px: 1            # buffer de exclusión en bordes de clase = ancho de 1 píxel (decisión metodológica vinculante, CLAUDE.md §3); mitiga píxeles mixtos
+  descarga_max_mb: 24              # tamaño máx. por petición getDownloadURL (límite de GEE: 32 MB); sobre esto se trocea en teselas
+  producto: s2l2a                  # prefijo de nombre de archivo
+  estratos:                        # ID_USO del catastro SIT -> estrato (ADR-0011). Tabla por validar con el usuario
+    columna_sit: ID_USO
+    columna_id_poligono: ID            # identificador del polígono en el SIT (para registrar reparaciones)
+    codigos: {forestal: 1, urbano: 2, otras: 3}    # valor entero en el ráster; 0 = sin catastro
+    codigos_id_uso: {"01": 1, "02": 2, "03": 3, "04": 4, "05": 5, "06": 6, "07": 7, "08": 8}   # banda id_uso del ráster de etiquetas (0 = sin catastro)
+    por_id_uso:
+      "01": urbano                 # Áreas urbanas e industriales
+      "02": otras                  # Terrenos agrícolas
+      "03": otras                  # Praderas y matorrales
+      "04": forestal               # Bosques (plantación y nativo)
+      "05": otras                  # Humedales
+      "06": otras                  # Áreas desprovistas de vegetación
+      "07": otras                  # Nieves eternas y glaciares
+      "08": otras                  # Cuerpos de agua
 umbrales:
   metodos: [otsu_multinivel, kde_minimo]
   estrategias: [internacional, regional, ad_hoc]

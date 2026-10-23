@@ -5,6 +5,7 @@ checkpoint build_fire_catalog:
     input:
         shp=shapefiles_crudos,
         schema_columns=config["rutas"]["esquema_columnas"],
+        points=shapefiles_puntos,
     output:
         catalog=f"{RES}/catalogo/catalogo_incendios.csv",
         fires=f"{RES}/catalogo/fires.tsv",
@@ -16,6 +17,7 @@ checkpoint build_fire_catalog:
         window=config["seleccion"]["periodos"]["calibracion"],
         min_area_ha=config["seleccion"]["superficie_min_ha"],
         id_prefix=config["proyecto"]["prefijo_id"],
+        points_area_tol_pct=config["seleccion"]["puntos_tolerancia_superficie_pct"],
     log:
         f"{LOGS}/build_fire_catalog.log",
     benchmark:

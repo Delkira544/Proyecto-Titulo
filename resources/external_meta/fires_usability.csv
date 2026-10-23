@@ -1,12 +1,12 @@
 fire_id,fecha_inicio,fecha_termino,estado,motivo_codigo,motivo,escena_pre,fecha_pre,cobertura_pre_pct,ventana_pre_usada,escenas_exploradas_pre,escena_post,fecha_post,cobertura_post_pct,ventana_post_usada,escenas_exploradas_post,nubosidad_pre_pct,nubosidad_post_pct
-bio2019-001,,,excluido,fecha de inicio faltante,fecha de inicio faltante,,,,,,,,,,,,
-bio2019-002,,,excluido,fecha de inicio faltante,fecha de inicio faltante,,,,,,,,,,,,
-bio2019-003,,,excluido,fecha de inicio faltante,fecha de inicio faltante,,,,,,,,,,,,
-bio2019-004,,,excluido,fecha de inicio faltante,fecha de inicio faltante,,,,,,,,,,,,
-bio2019-005,,,excluido,fecha de inicio faltante,fecha de inicio faltante,,,,,,,,,,,,
-bio2019-006,,,excluido,fecha de inicio faltante,fecha de inicio faltante,,,,,,,,,,,,
-bio2019-007,,,excluido,fecha de inicio faltante,fecha de inicio faltante,,,,,,,,,,,,
-bio2019-008,,,excluido,fecha de inicio faltante,fecha de inicio faltante,,,,,,,,,,,,
+bio2019-001,2019-12-30,2020-01-08,excluido,fuera de la ventana de calibración,fuera de la ventana de calibración,,,,,,,,,,,,
+bio2019-002,2020-01-16,2020-01-21,usable,escena_pre_y_post_validas,escena_pre_y_post_validas,20200114T143701_20200114T144621_T18HXD,2020-01-14,100.0,0-10,2.0,20200124T143651_20200124T144544_T18HXD,2020-01-24,100.0,0-10,2.0,0.0,0.0
+bio2019-003,2020-01-16,2020-01-23,usable,escena_pre_y_post_validas,escena_pre_y_post_validas,20200114T143701_20200114T144621_T18HXD,2020-01-14,100.0,0-10,2.0,20200124T143651_20200124T144544_T18HXD,2020-01-24,100.0,0-10,2.0,2.56,0.0
+bio2019-004,2020-01-24,2020-04-06,usable,escena_pre_y_post_validas,escena_pre_y_post_validas,20200114T143701_20200114T144621_T18HXE,2020-01-14,100.0,0-10,4.0,20200413T143731_20200413T145116_T18HXE,2020-04-13,100.0,0-10,4.0,0.0,0.0
+bio2019-005,2020-01-25,2020-02-04,usable,escena_pre_y_post_validas,escena_pre_y_post_validas,20200124T143651_20200124T144544_T18HXD,2020-01-24,100.0,0-10,2.0,20200208T143659_20200208T144451_T18HXD,2020-02-08,100.0,0-10,2.0,0.0,0.0
+bio2019-006,2020-01-27,2020-03-24,usable,escena_pre_y_post_validas,escena_pre_y_post_validas,20200124T143651_20200124T144544_T18HYD;20200124T143651_20200124T144544_T19HBU,2020-01-24,100.0,0-10,2.0,20200329T143729_20200329T144954_T18HYD;20200329T143729_20200329T144954_T19HBU,2020-03-29,100.0,0-10,2.0,0.0,0.01
+bio2019-007,2020-02-20,2020-03-12,usable,escena_pre_y_post_validas,escena_pre_y_post_validas,20200218T143659_20200218T144453_T18HYD;20200218T143659_20200218T144453_T19HBU,2020-02-18,100.0,0-10,2.0,20200314T143721_20200314T144454_T18HYD;20200314T143721_20200314T144454_T19HBU,2020-03-14,100.0,0-10,2.0,0.0,0.0
+bio2019-008,2020-02-26,2020-03-26,usable,escena_pre_y_post_validas,escena_pre_y_post_validas,20200225T142729_20200225T143545_T18HYD;20200225T142729_20200225T143545_T19HBU,2020-02-25,100.0,0-10,4.0,20200326T142729_20200326T143307_T18HYD;20200326T142729_20200326T143307_T19HBU,2020-03-26,100.0,0-10,4.0,0.0,0.0
 bio2020-001,2021-01-18,2021-01-29,usable,escena_pre_y_post_validas,escena_pre_y_post_validas; geometría inválida sin reparar,20210103T143729_20210103T144608_T18HXD,2021-01-03,100.0,10-20,4.0,20210202T143729_20210202T144435_T18HXD,2021-02-02,100.0,0-10,2.0,0.0,0.0
 bio2021-001,2022-02-10,2022-02-24,usable,escena_pre_y_post_validas,escena_pre_y_post_validas; geometría inválida sin reparar,20220207T143719_20220207T144217_T18HYD;20220207T143719_20220207T144217_T19HBU,2022-02-07,100.0,0-10,2.0,20220227T143729_20220227T144150_T18HYD;20220227T143729_20220227T144150_T19HBU,2022-02-27,100.0,0-10,2.0,0.0,3.31
 bio2021-002,2022-02-11,2022-03-10,usable,escena_pre_y_post_validas,escena_pre_y_post_validas; geometría inválida sin reparar,20220207T143719_20220207T144217_T18HYD;20220207T143719_20220207T144217_T19HBU,2022-02-07,100.0,0-10,2.0,20220314T143731_20220314T145009_T18HYD;20220314T143731_20220314T145009_T19HBU,2022-03-14,100.0,0-10,2.0,0.0,0.0

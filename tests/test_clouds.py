@@ -130,6 +130,7 @@ def test_apply_cloud_review_y_resumen():
             "nubosidad_post_pct": pd.NA,
             "escena_pre": pd.NA,
             "escena_post": pd.NA,
+            "fecha_origen": "perimetro",
         }
     )
     review = pd.DataFrame(

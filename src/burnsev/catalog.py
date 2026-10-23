@@ -38,6 +38,7 @@ CATALOG_COLUMNS = [
     "nubosidad_post_pct",
     "escena_pre",
     "escena_post",
+    "fecha_origen",
 ]
 
 MOTIVO_PENDIENTE = "cumple filtros espaciotemporales; nubosidad pendiente de revisión"
@@ -115,6 +116,75 @@ def parse_dates(series: pd.Series) -> pd.Series:
         return series.dt.normalize()
     parsed = series.map(lambda x: parse_es_date(str(x)) if pd.notna(x) else pd.NaT)
     return pd.to_datetime(parsed).dt.normalize()
+
+
+def _name_key(text: object) -> str:
+    """Nombre de incendio comparable: sin tildes, mayúsculas y espacios simples."""
+    return " ".join(_fold(str(text)).split())
+
+
+def split_fire_name(name: object) -> tuple[int | None, str]:
+    """Separa ``'342 - RAQUI RESERVA'`` en (342, 'raqui reserva')."""
+    head, sep, tail = str(name).partition("-")
+    if sep and head.strip().isdigit():
+        return int(head.strip()), _name_key(tail)
+    return None, _name_key(name)
+
+
+def fill_dates_from_points(
+    catalog: pd.DataFrame, points: pd.DataFrame, area_tol_pct: float
+) -> pd.DataFrame:
+    """Rellena fechas faltantes con el archivo de puntos de inicio de CONAF.
+
+    Solo toca incendios sin ``fecha_inicio``. El emparejamiento exige: número de
+    registro (prefijo del nombre del perímetro) igual a ``NUMERO_REG`` del punto,
+    mismo nombre (sin tildes ni mayúsculas), un único punto candidato y superficie
+    dentro de ``area_tol_pct`` % de la del perímetro. Si algo falla, el incendio
+    queda sin fecha (no se infiere). Los puntos solo aportan fechas.
+
+    Args:
+        catalog: tabla con ``nombre``, ``superficie_ha_conaf``, ``fecha_inicio`` y
+            ``fecha_termino``.
+        points: tabla con ``NUMERO_REG``, ``NOM_INCEN``, ``SUPERFICIE``,
+            ``INICIO_IN`` y ``EXTINCION``.
+        area_tol_pct: diferencia relativa máxima de superficie, en %.
+
+    Returns:
+        Catálogo con ``fecha_origen`` = ``perimetro`` o ``puntos_conaf``.
+    """
+    out = catalog.copy()
+    out["fecha_origen"] = "perimetro"
+    keys = points.assign(
+        _num=pd.to_numeric(points["NUMERO_REG"], errors="coerce"),
+        _name=points["NOM_INCEN"].map(_name_key),
+    )
+    for idx in out.index[out["fecha_inicio"].isna()]:
+        number, name = split_fire_name(out.at[idx, "nombre"])
+        if number is None:
+            continue
+        hits = keys[(keys["_num"] == number) & (keys["_name"] == name)]
+        if len(hits) != 1:
+            logger.warning(
+                "%s: %d puntos candidatos; sin fecha", out.at[idx, "fire_id"], len(hits)
+            )
+            continue
+        hit = hits.iloc[0]
+        area = float(out.at[idx, "superficie_ha_conaf"])
+        diff = 100 * abs(float(hit["SUPERFICIE"]) - area) / area if area else 100.0
+        if diff > area_tol_pct:
+            logger.warning(
+                "%s: superficie del punto difiere %.1f %%; sin fecha",
+                out.at[idx, "nombre"],
+                diff,
+            )
+            continue
+        out.at[idx, "fecha_inicio"] = parse_dates(pd.Series([hit["INICIO_IN"]])).iloc[0]
+        if pd.isna(out.at[idx, "fecha_termino"]):
+            out.at[idx, "fecha_termino"] = parse_dates(
+                pd.Series([hit["EXTINCION"]])
+            ).iloc[0]
+        out.at[idx, "fecha_origen"] = "puntos_conaf"
+    return out
 
 
 def in_region(
@@ -232,6 +302,8 @@ def build_catalog(
     window: tuple[str, str],
     min_area_ha: float,
     id_prefix: str,
+    points: pd.DataFrame | None = None,
+    points_area_tol_pct: float = 5.0,
 ) -> pd.DataFrame:
     """Construye el catálogo de incendios del Biobío con estado dentro/fuera y motivo.
 
@@ -243,6 +315,9 @@ def build_catalog(
         window: ventana de calibración (inicio, fin) ISO.
         min_area_ha: superficie mínima en hectáreas.
         id_prefix: prefijo de ``fire_id``.
+        points: puntos de inicio de CONAF para completar fechas faltantes
+            (ver :func:`fill_dates_from_points`); opcional.
+        points_area_tol_pct: tolerancia de superficie para emparejar puntos.
 
     Returns:
         DataFrame con las columnas de ``CATALOG_COLUMNS`` (sin geometría).
@@ -283,6 +358,10 @@ def build_catalog(
             "%d filas con (temporada, id_conaf) repetido; revisar el inventario",
             duplicated.sum(),
         )
+    if points is not None:
+        catalog = fill_dates_from_points(catalog, points, points_area_tol_pct)
+    else:
+        catalog["fecha_origen"] = "perimetro"
     catalog = classify_fires(catalog, window, min_area_ha)
     catalog["fire_id"] = assign_fire_ids(catalog, id_prefix)
     catalog["nubosidad_revisada"] = False

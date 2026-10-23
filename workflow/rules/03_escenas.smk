@@ -50,7 +50,7 @@ rule query_scene_cloud:
         "../scripts/03_query_scene_cloud.py"
 
 
-rule review_fire_cloudiness:
+checkpoint review_fire_cloudiness:
     """Decide usable/excluido por incendio y escribe el CSV versionado y su resumen."""
     input:
         stats=stats_de_incendios,

@@ -222,3 +222,32 @@ def test_build_perimeters_ignora_id_repetido_en_otra_region():
     perimeters = build_perimeters({"2022_2023": raw}, catalog, crs=CRS, **kwargs)
     assert perimeters["fire_id"].tolist() == ["bio2022-001"]
     assert perimeters.geometry.iloc[0].bounds[0] == 0  # la geometría del Biobío
+
+
+def test_fill_dates_from_points():
+    from burnsev.catalog import fill_dates_from_points
+
+    cat = pd.DataFrame(
+        {
+            "fire_id": ["a", "b", "c"],
+            "nombre": ["342 - RAQUI RESERVA", "10 - OTRO", "7 - SIN PUNTO"],
+            "superficie_ha_conaf": [351.2, 100.0, 50.0],
+            "fecha_inicio": [pd.NaT, pd.NaT, pd.Timestamp("2021-01-01")],
+            "fecha_termino": [pd.NaT, pd.NaT, pd.NaT],
+        }
+    )
+    pts = pd.DataFrame(
+        {
+            "NUMERO_REG": [342.0, 10.0],
+            "NOM_INCEN": ["Raqui Reserva", "OTRO"],
+            "SUPERFICIE": [350.0, 300.0],  # el segundo difiere más de 5 %
+            "INICIO_IN": ["30-dic-2019 01:47", "1-ene-2020 10:00"],
+            "EXTINCION": ["8-ene-2020 21:46", "2-ene-2020 10:00"],
+        }
+    )
+    out = fill_dates_from_points(cat, pts, 5.0).set_index("fire_id")
+    assert out.loc["a", "fecha_inicio"] == pd.Timestamp("2019-12-30")
+    assert out.loc["a", "fecha_termino"] == pd.Timestamp("2020-01-08")
+    assert out.loc["a", "fecha_origen"] == "puntos_conaf"
+    assert pd.isna(out.loc["b", "fecha_inicio"])  # superficie no coincide
+    assert out.loc["c", "fecha_origen"] == "perimetro"  # ya tenía fecha
