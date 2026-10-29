@@ -29,6 +29,7 @@ bibliográfico. La convención se define en el
 | [0016](0016-criterios-de-decision-estadistica.md) | Criterios de decisión mediante McNemar, superioridad y equivalencia | Propuesto | 2026-09-29 |
 | [0017](0017-configuracion-fuente-unica.md) | Archivo de configuración como fuente única de parámetros y de la partición de datos | Aceptado | 2026-09-29 |
 | [0018](0018-snakemake-gestor-flujo-trabajo.md) | Snakemake como gestor del flujo de trabajo, con entornos conda por regla | Aceptado | 2026-09-29 |
+| [0019](0019-veredicto-multimodalidad-bic-informativo.md) | Veredicto de multimodalidad por Silverman y dip, con el BIC solo como información | Aceptado | 2026-10-29 |
 
 ## Estados
 
