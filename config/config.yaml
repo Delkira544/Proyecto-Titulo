@@ -130,6 +130,13 @@ indices_export:
       "06": otras                  # Áreas desprovistas de vegetación
       "07": otras                  # Nieves eternas y glaciares
       "08": otras                  # Cuerpos de agua
+estadistica:
+  # Etapa 05: descripción de los valores de píxel por índice y estrato (insumo del análisis de multimodalidad)
+  indices: [dnbr, rdnbr, bai, mirbi]   # bandas de severidad exportadas (indices_export); NDVI/NDBI de apoyo aún no se exportan
+  estratos_orden: [forestal, otras, urbano]   # orden de columnas en tablas y figuras
+  bins: 100                        # PROVISORIO: nº de clases del histograma (decisión de visualización, sin fuente académica)
+  rango_percentil: [0.5, 99.5]     # PROVISORIO: recorta SOLO los bins/figuras (colas largas de RdNBR y BAI); los estadísticos usan todos los píxeles
+  figuras_dpi: 200
 umbrales:
   metodos: [otsu_multinivel, kde_minimo]
   estrategias: [internacional, regional, ad_hoc]

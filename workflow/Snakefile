@@ -15,8 +15,9 @@ include: "rules/01_ingesta.smk"        # inventario + manifiesto sha256 de los d
 include: "rules/02_catalogo.smk"       # catálogo dentro/fuera + motivo
 include: "rules/03_escenas.smk"        # GEE: escenas S2 pre/post y nubosidad por fire_id
 include: "rules/04_indices.smk"        # GEE: dNBR, RdNBR, BAI, MIRBI por incendio + estrato CONAF
-# include: "rules/05_umbrales.smk"     # Otsu multinivel y KDE
-# include: "rules/06_validacion.smk"   # EMSR859 / GeoCBI
+include: "rules/05_estadistica.smk"    # valores de píxel, estadísticos e histogramas por índice y estrato
+# include: "rules/06_umbrales.smk"     # Otsu multinivel y KDE
+# include: "rules/07_validacion.smk"   # EMSR859 / GeoCBI
 
 
 rule all:
@@ -30,3 +31,4 @@ rule all:
         f"{EXT_META}/fires_usability_summary.csv",
         productos_indices,
         f"{RES}/tables/suficiencia_estratos.csv",
+        productos_estadistica,

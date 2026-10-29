@@ -89,5 +89,18 @@ properties:
         properties:
           codigos: {type: object, required: [forestal, urbano, otras]}
           por_id_uso: {type: object, additionalProperties: {enum: [forestal, urbano, otras]}}
+  estadistica:
+    type: object
+    required: [indices, estratos_orden, bins, rango_percentil, figuras_dpi]
+    properties:
+      indices: {type: array, minItems: 1, items: {type: string}}
+      estratos_orden: {type: array, minItems: 1, items: {enum: [forestal, urbano, otras]}}
+      bins: {type: integer, minimum: 5}
+      rango_percentil:
+        type: array
+        minItems: 2
+        maxItems: 2
+        items: {type: number, minimum: 0, maximum: 100}
+      figuras_dpi: {type: integer, minimum: 50}
   umbrales: {type: object, required: [metodos, estrategias]}
   semilla_aleatoria: {type: integer}

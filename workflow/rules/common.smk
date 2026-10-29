@@ -79,3 +79,25 @@ def conteos_estrato(wildcards=None):
 def shapefiles_puntos(wildcards=None):
     """Shapefiles de puntos de inicio de incendios (solo aportan fechas faltantes)."""
     return sorted(str(p) for p in Path(RAW_PUNTOS).glob("*/*.shp"))
+
+
+def productos_estadistica(wildcards=None):
+    """Tablas y figuras finales de la etapa 05."""
+    return [
+        f"{PROC}/tablas/valores_pixel.parquet",
+        f"{RES}/tables/estadisticos_indice_estrato.csv",
+        f"{RES}/tables/estadisticos_por_incendio.csv",
+        f"{RES}/tables/histogramas_indice_estrato.csv",
+        f"{RES}/tables/resumen_incendios.csv",
+        f"{RES}/figures/histogramas_indice_estrato.png",
+        f"{RES}/figures/cajas_indice_estrato.png",
+        f"{RES}/figures/panorama_incendios.png",
+    ]
+
+
+def pixeles_por_incendio(wildcards=None):
+    """Parquet intermedio de píxeles de cada incendio usable."""
+    return [
+        f"{INT}/pixeles/{fire_id}_{fecha}.parquet"
+        for fire_id, fecha in incendios_usables()
+    ]
