@@ -16,8 +16,9 @@ include: "rules/02_catalogo.smk"       # catálogo dentro/fuera + motivo
 include: "rules/03_escenas.smk"        # GEE: escenas S2 pre/post y nubosidad por fire_id
 include: "rules/04_indices.smk"        # GEE: dNBR, RdNBR, BAI, MIRBI por incendio + estrato CONAF
 include: "rules/05_estadistica.smk"    # valores de píxel, estadísticos e histogramas por índice y estrato
-# include: "rules/06_umbrales.smk"     # Otsu multinivel y KDE
-# include: "rules/07_validacion.smk"   # EMSR859 / GeoCBI
+include: "rules/06_multimodalidad.smk"  # Silverman, dip y BIC por índice y estrato; decisión Otsu/KDE vs percentiles
+# include: "rules/07_umbrales.smk"     # Otsu multinivel y KDE
+# include: "rules/08_validacion.smk"   # EMSR859 / GeoCBI
 
 
 rule all:
@@ -32,3 +33,4 @@ rule all:
         productos_indices,
         f"{RES}/tables/suficiencia_estratos.csv",
         productos_estadistica,
+        productos_multimodalidad,

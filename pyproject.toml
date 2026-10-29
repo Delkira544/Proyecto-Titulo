@@ -26,6 +26,7 @@ dependencies = [
     "earthengine-api",
     "snakemake",
     "pyarrow>=26.0.0",
+    "diptest>=0.12.0",
 ]
 
 # Grupo de desarrollo (PEP 735): `uv sync` lo instala por defecto.

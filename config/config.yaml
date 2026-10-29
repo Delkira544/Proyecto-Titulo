@@ -137,6 +137,22 @@ estadistica:
   bins: 100                        # PROVISORIO: nº de clases del histograma (decisión de visualización, sin fuente académica)
   rango_percentil: [0.5, 99.5]     # PROVISORIO: recorta SOLO los bins/figuras (colas largas de RdNBR y BAI); los estadísticos usan todos los píxeles
   figuras_dpi: 200
+multimodalidad:
+  # Etapa 06: Silverman (principal, ADR-0009) + dip (complementaria) + BIC; decide método por combinación (ADR-0010).
+  # Todos los valores son PROVISORIOS y deben quedar fijos ANTES de ver resultados (ADR-0010).
+  zona: dentro                       # ADR-0010: percentiles y pruebas sobre la distribución dentro del perímetro
+  recorte_percentil: [0.5, 99.5]     # PROVISORIO: recorta colas largas (RdNBR, BAI) antes de las pruebas; sin fuente académica
+  alfa: 0.05                         # convención; coherente con ADR-0016. Hall y York (2001) lo usan como caso de referencia. Sin fuente específica
+  n_muestra: 20000                   # PROVISORIO: n por submuestra (el dip y el BIC rechazan casi siempre con n ~ 10^6); sin fuente, se valida con sensibilidad
+  replicas: 20                       # PROVISORIO: submuestras por combinación del pool; sin fuente
+  replicas_incendio: 5               # PROVISORIO: submuestras por combinación incendio-índice-estrato; sin fuente
+  bootstrap_silverman: 200           # PROVISORIO: remuestras por prueba de Silverman (resolución del p = 1/200); sin fuente
+  k_max: 5                           # PROVISORIO: máximo de componentes de la mezcla gaussiana; sin fuente
+  n_init: 5                          # PROVISORIO: inicializaciones por ajuste de la mezcla (Fraley y Raftery, 2002, usan BIC; n_init sin fuente)
+  covarianza: full                   # mezcla 1D: varianza propia por componente
+  proporcion_minima_multimodal: 0.5  # PROVISORIO: ADR-0010, activa la contingencia si la proporción de multimodales es menor; sin fuente (convención «mayoría»)
+  figura_puntos_kde: 512             # puntos de la rejilla de la figura de verificación (solo visualización)
+  percentiles_contingencia: [33.3, 66.7]  # PROVISORIO: sin fuente académica (no se halló ninguna que defina severidad por percentiles). El nº de clases depende de ADR-0014 (pendiente)
 umbrales:
   metodos: [otsu_multinivel, kde_minimo]
   estrategias: [internacional, regional, ad_hoc]

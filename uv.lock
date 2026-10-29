@@ -51,6 +51,7 @@ name = "biobio-severidad-umbral"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "diptest" },
     { name = "earthengine-api" },
     { name = "geopandas" },
     { name = "matplotlib" },
@@ -75,6 +76,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "diptest", specifier = ">=0.12.0" },
     { name = "earthengine-api" },
     { name = "geopandas", specifier = ">=1.1.4" },
     { name = "matplotlib" },
@@ -361,6 +363,25 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a9/95/a3dbbb5028f35eafb79008e7522a75244477d2838f38cbb722248dabc2a8/cycler-0.12.1.tar.gz", hash = "sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c", size = 7615, upload-time = "2023-10-07T05:32:18.335Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e7/05/c19819d5e3d95294a6f5947fb9b9629efb316b96de511b418c53d245aae6/cycler-0.12.1-py3-none-any.whl", hash = "sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30", size = 8321, upload-time = "2023-10-07T05:32:16.783Z" },
+]
+
+[[package]]
+name = "diptest"
+version = "0.12.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/17/ea/ce9f60b50d03c25509d244db0eaefa049a16aa7954f0e13f3b6740afe130/diptest-0.12.0.tar.gz", hash = "sha256:ade99868da603b674521718ed38e53aee2eb5d9bf47b03930eb149169cb973cd", size = 89047, upload-time = "2026-10-18T19:18:52.514Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/3f/2f6f515013a5eecc2e9349324d9216369e2fbae1f820f9c8f82e00d14c00/diptest-0.12.0-cp314-cp314-macosx_13_0_arm64.whl", hash = "sha256:9f704075be78896abdb564aebad1fa50e957aff4c043f8c71a35b8af8091646c", size = 384664, upload-time = "2026-10-18T19:18:21.663Z" },
+    { url = "https://files.pythonhosted.org/packages/c2/ef/f412f9ec314939da4e77a73942509c88dc115fe96b56442f967abcc6aad7/diptest-0.12.0-cp314-cp314-macosx_13_0_x86_64.whl", hash = "sha256:70f565bcca7d86930607ba13ee8f2ba1635de36c9c3d047e25ffbef89f04f708", size = 422938, upload-time = "2026-10-18T19:18:23.133Z" },
+    { url = "https://files.pythonhosted.org/packages/64/89/7054cf560d30c783c619ef9501ede2cf8e2e26a16f562f4426b58940e0b1/diptest-0.12.0-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:152b50793939afee0e55f7341410c788ce15f2105898b383563ccd89826889f4", size = 243063, upload-time = "2026-10-18T19:18:24.593Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/c7/6052eb3a00797a9f39ddd5b670c8184128ccabd60bd02f28aeeb11292581/diptest-0.12.0-cp314-cp314-win_amd64.whl", hash = "sha256:1c9d30ba561e0b51530e2c373fcf8bb3b625a821ee5d5c6f96dd081f0f939394", size = 434907, upload-time = "2026-10-18T19:18:26.105Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/a4/7cb426d5d3ab40cad54de6ffadeed2d4ba31593d227a01db611a41a58c2a/diptest-0.12.0-cp314-cp314t-macosx_13_0_arm64.whl", hash = "sha256:9113b2f4e9bd164fbadc5b673f362bc5f23ca304287e3525a1055f02e850732e", size = 389372, upload-time = "2026-10-18T19:18:27.557Z" },
+    { url = "https://files.pythonhosted.org/packages/e9/3d/d1938ff69800e68303ea81873cfcecd199d66613827d71da535b47f62ff5/diptest-0.12.0-cp314-cp314t-macosx_13_0_x86_64.whl", hash = "sha256:f0567ad9f4ad4198489e2b1720ccb7b83a243a9be32f851beb1d9f1f1f52f691", size = 426845, upload-time = "2026-10-18T19:18:29.11Z" },
+    { url = "https://files.pythonhosted.org/packages/b3/fd/f6bb167c09e430afedfa6095e517ebfc8abdf72affbe5efb8032a3cf8b96/diptest-0.12.0-cp314-cp314t-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2093bf2b1bf92a36cd7a8a1225016021224288a64eb6f543ccf2ee08d3ad4715", size = 244163, upload-time = "2026-10-18T19:18:30.879Z" },
+    { url = "https://files.pythonhosted.org/packages/76/7b/020fd10be2204ff78e8eb5480f56fc05a706868cf28aa37622f8f83770cf/diptest-0.12.0-cp314-cp314t-win_amd64.whl", hash = "sha256:23ad9295f3b3aeca31f0eb019b728f4c46248dd9a5f8649802dd806547b0e51b", size = 439136, upload-time = "2026-10-18T19:18:32.312Z" },
 ]
 
 [[package]]

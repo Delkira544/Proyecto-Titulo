@@ -95,6 +95,15 @@ def productos_estadistica(wildcards=None):
     ]
 
 
+def productos_multimodalidad(wildcards=None):
+    """Tablas finales de la etapa 06."""
+    return [
+        f"{RES}/tables/multimodalidad_indice_estrato.csv",
+        f"{RES}/tables/combinaciones_percentiles.csv",
+        f"{RES}/figures/multimodalidad_discordantes.png",
+    ]
+
+
 def pixeles_por_incendio(wildcards=None):
     """Parquet intermedio de píxeles de cada incendio usable."""
     return [
