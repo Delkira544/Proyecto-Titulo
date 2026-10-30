@@ -171,3 +171,23 @@ def test_perimeter_lonlat_descarta_z_y_pasa_a_4326():
     assert not geom.has_z
     lon, lat = geom.representative_point().coords[0]
     assert -75 < lon < -70 and -40 < lat < -35  # Biobío aprox.
+
+
+def test_perimeter_lonlat_repara_si_queda_invalido(caplog):
+    """Un hueco que cruza el borde da un polígono inválido: se repara y se avisa."""
+    import geopandas as gpd
+    from shapely.geometry import Polygon
+
+    from burnsev.gee_scenes import perimeter_lonlat
+
+    x0, y0 = 700_000, 5_850_000  # EPSG:32719, cerca de San Rosendo
+    shell = [(x0, y0), (x0 + 1000, y0), (x0 + 1000, y0 + 1000), (x0, y0 + 1000)]
+    hole = [(x0 + 900, y0 + 400), (x0 + 1100, y0 + 400), (x0 + 1100, y0 + 600)]
+    bad = Polygon(shell, [hole])
+    assert not bad.is_valid
+    gdf = gpd.GeoDataFrame(geometry=[bad], crs="EPSG:32719")
+    with caplog.at_level("WARNING", logger="burnsev.gee_scenes"):
+        geom = perimeter_lonlat(gdf, "EPSG:32719", 0)
+    assert geom.is_valid
+    assert geom.geom_type in {"Polygon", "MultiPolygon"}
+    assert "make_valid" in caplog.text

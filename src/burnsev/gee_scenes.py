@@ -19,6 +19,7 @@ import pandas as pd
 import shapely
 from shapely.geometry import mapping
 from shapely.geometry.base import BaseGeometry
+from shapely.validation import explain_validity
 
 logger = logging.getLogger(__name__)
 
@@ -51,13 +52,27 @@ def perimeter_lonlat(
     La simplificación reduce el tamaño de la petición; la tolerancia es del orden
     del píxel SCL (20 m). Se descarta la coordenada Z porque GEE rechaza el
     GeoJSON 3D (algunos perímetros CONAF la traen).
+
+    Si tras simplificar y reproyectar la geometría queda inválida (p. ej. un hueco
+    que cruza el borde exterior), GEE responde con un error interno genérico. En
+    ese caso se repara con ``make_valid`` (método ``structure``: los anillos
+    exteriores suman y los huecos restan) y se deja una advertencia en el log;
+    nunca se repara en silencio.
     """
     projected = perimeter.to_crs(work_crs)
     merged = projected.geometry.union_all()
     if simplify_m > 0:
         merged = merged.simplify(simplify_m, preserve_topology=True)
     lonlat = gpd.GeoSeries([merged], crs=work_crs).to_crs("EPSG:4326").iloc[0]
-    return shapely.force_2d(lonlat)
+    lonlat = shapely.force_2d(lonlat)
+    if not lonlat.is_valid:
+        logger.warning(
+            "Perímetro inválido tras simplificar/reproyectar (%s); se repara con "
+            "make_valid(method='structure')",
+            explain_validity(lonlat),
+        )
+        lonlat = shapely.make_valid(lonlat, method="structure", keep_collapsed=False)
+    return lonlat
 
 
 def perimeter_geometry(
