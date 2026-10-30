@@ -18,18 +18,20 @@ bibliográfico. La convención se define en el
 | [0005](0005-evaluar-dnbr-y-rdnbr.md) | Evaluar dNBR y RdNBR sin preferir uno de antemano | Aceptado | 2026-09-29 |
 | [0006](0006-otsu-y-kde-en-paralelo.md) | Aplicar umbralización multinivel de Otsu y KDE en paralelo | Aceptado | 2026-09-29 |
 | [0007](0007-referencia-validacion-emsr859.md) | Usar el producto EMSR859 como referencia de validación | Aceptado | 2026-09-29 |
-| [0008](0008-escenario-b-geocbi.md) | Escenario B: referencia mediante GeoCBI fotointerpretado | Propuesto (contingencia) | 2026-09-29 |
+| [0008](0008-escenario-b-geocbi.md) | Escenario B: referencia mediante GeoCBI fotointerpretado | Reemplazado por ADR-0020 | 2026-09-29 |
 | [0009](0009-prueba-multimodalidad-silverman.md) | Usar la prueba de Silverman como prueba principal de multimodalidad | Aceptado | 2026-09-29 |
 | [0010](0010-contingencia-umbrales-percentiles.md) | Umbrales por percentiles como contingencia ante falta de multimodalidad | Propuesto (contingencia) | 2026-09-29 |
 | [0011](0011-estratificacion-catastro-conaf.md) | Estratificar con el catastro de CONAF y usar sus polígonos solo como delimitadores | Aceptado | 2026-09-29 |
 | [0012](0012-particion-temporal-datos.md) | Partición temporal de los datos con validación cruzada complementaria | Aceptado | 2026-09-29 |
 | [0013](0013-muestreo-estratificado-comun.md) | Muestreo aleatorio estratificado común a las tres estrategias | Aceptado | 2026-09-29 |
-| [0014](0014-unidad-analisis-correspondencia-clases.md) | Unidad de análisis y correspondencia de clases entre EMSR859 y severidad | Propuesto | 2026-09-29 |
+| [0014](0014-unidad-analisis-correspondencia-clases.md) | Unidad de análisis y correspondencia de clases entre EMSR859 y severidad | Aceptado | 2026-09-29 |
 | [0015](0015-metricas-de-exactitud.md) | Exactitudes global, de usuario y de productor como métricas principales | Aceptado | 2026-09-29 |
 | [0016](0016-criterios-de-decision-estadistica.md) | Criterios de decisión mediante McNemar, superioridad y equivalencia | Propuesto | 2026-09-29 |
 | [0017](0017-configuracion-fuente-unica.md) | Archivo de configuración como fuente única de parámetros y de la partición de datos | Aceptado | 2026-09-29 |
 | [0018](0018-snakemake-gestor-flujo-trabajo.md) | Snakemake como gestor del flujo de trabajo, con entornos conda por regla | Aceptado | 2026-09-29 |
 | [0019](0019-veredicto-multimodalidad-bic-informativo.md) | Veredicto de multimodalidad por Silverman y dip, con el BIC solo como información | Aceptado | 2026-10-29 |
+| [0020](0020-validacion-binaria-emsr859.md) | Validar en el nivel de superficie quemada con EMSR859 y comparar la severidad sin referencia externa | Aceptado | 2026-10-29 |
+| [0021](0021-crs-unico-epsg32719.md) | Adoptar EPSG:32719 (UTM 19S) como CRS único del proyecto | Aceptado | 2026-10-29 |
 
 ## Estados
 

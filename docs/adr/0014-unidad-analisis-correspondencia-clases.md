@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| **Estado** | Propuesto (hasta verificar el supuesto S4) |
+| **Estado** | Aceptado |
 | **Fecha** | 2026-09-29 |
 | **Origen** | Revisión posterior a la Fase 1 |
 | **Relacionado con** | RF-12, OE4, supuestos S2 y S4, ADR-0006, ADR-0007, ADR-0013 |
@@ -35,17 +35,21 @@ umbralización multinivel (ADR-0006).
 2. **Agregación de clases** hasta un nivel en que la correspondencia sea
    defendible.
 
-## Decisión (propuesta)
+## Decisión
 
 - **Unidad de análisis:** el píxel de la grilla de trabajo, etiquetado con la
   clase de EMSR859 que cubre más del 50 % de su superficie. El efecto de los
   píxeles de borde se evalúa mediante la exclusión configurable de RF-16.
-- **Correspondencia de clases:** se definirá tras revisar las definiciones
-  oficiales de las clases de daño en el manual de Copernicus EMS. Si la
-  correspondencia uno a uno no es defendible, se agregan clases.
+- **Correspondencia de clases:** EMSR859 no gradúa la vegetación (supuesto S2
+  refutado, ADR-0020), así que la correspondencia uno a uno no es defendible y
+  se agregan clases hasta el nivel binario:
 
-Este registro pasa a *Aceptado* cuando se complete la tabla de
-correspondencia.
+  | Clase de severidad | Clase de referencia EMSR859 |
+  |---|---|
+  | Baja, moderada, alta | Dentro de `observedEventA` («Burnt area») |
+  | No quemado | Dentro de la zona de trabajo y fuera de `observedEventA` |
+
+  La zona de trabajo y las exclusiones se definen en el ADR-0020.
 
 ## Consecuencias
 
@@ -58,7 +62,8 @@ correspondencia.
   evaluada.
 
 **Pendientes**
-- Completar la tabla de correspondencia (supuesto S4).
+- ~~Completar la tabla de correspondencia (supuesto S4).~~ Resuelto en el
+  nivel binario (ADR-0020).
 - Si el atributo de grado de daño no está poblado (supuesto S2), esta
   decisión se reemplaza en el contexto del ADR-0008.
 

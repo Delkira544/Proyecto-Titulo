@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| **Estado** | Propuesto (contingencia) |
+| **Estado** | Reemplazado por ADR-0020 |
 | **Fecha** | 2026-09-29 |
 | **Origen** | Fase 1, registrado retroactivamente |
 | **Relacionado con** | RF-12 a RF-16, OE4, supuesto S2, ADR-0007 |

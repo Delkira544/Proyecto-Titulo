@@ -35,26 +35,26 @@ No cambiar ni cuestionar sin que el usuario lo pida. Si una tarea las contradice
 - **Buffer de exclusión** de ancho de píxel en los bordes de clase, para mitigar el efecto de píxeles mixtos (píxeles que contienen más de una cobertura).
 - **Evaluación de exactitud:** muestreo aleatorio estratificado según Olofsson et al. (2014).
 - **Estabilidad de umbrales:** validación cruzada leave-one-out (se deja un incendio fuera cada vez y se calibra con el resto).
-- **Validación indirecta de severidad** sin acceso a terreno: fotointerpretación GeoCBI (índice compuesto de quemado calculado con interpretación visual de imágenes de alta resolución; De Santis & Chuvieco).
+- **Validación en dos niveles (ADR-0020, decidido por el usuario el 2026-10-29):** (i) quemado / no quemado contra `observedEventA` del GRA de EMSR859 (AOI01, AOI03 recortado al Biobío y AOI04; AOI02 queda fuera de la región); (ii) severidad comparada entre estrategias sin referencia externa (diferencia de umbrales, desacuerdo entre mapas, estabilidad). El GeoCBI fotointerpretado (ADR-0008, reemplazado) queda solo como complemento si aparecen imágenes VHR. La reformulación de la pregunta, el OE4 y el OE5 está pendiente de validar con el profesor guía.
 
 ## 4. Pendientes por verificar (no asumir resueltos)
 
 Antes de apoyarse en estos puntos, confirmar su estado con el usuario:
 
-- Si el shapefile `Grading - Areas - Affected land use-cover` de EMSR859 trae poblado el atributo de grado de daño para los polígonos de vegetación. Esto define el **Escenario A** (usar EMSR859 directamente) frente al **Escenario B** (GeoCBI propio).
+- ~~Grado de daño de EMSR859 poblado (supuesto S2)~~: **resuelto el 2026-10-29, no se cumple** (`damage_gra` = «Affected» en 8771/8771 polígonos; AOI03 sin capa). Evidencia en `results/emsr859_spike_hu041.md` (regla `inspect_emsr859`) y ADR-0020.
 - Multimodalidad de las distribuciones de los índices dentro de los perímetros, por estrato.
 - Cantidad de pares de imágenes Sentinel-2 sin nubes para los incendios de calibración 2020–2025.
 - Obtención de una imagen de muy alta resolución (VHR) de febrero–marzo 2026 para una posible fotointerpretación GeoCBI.
-- **Parámetros técnicos aún sin definir** (no fijarlos por cuenta propia; pedirlos o dejarlos como parámetro en `config/config.yaml`): bandas exactas para el NBR (B8 o B8A frente a B12), CRS (sistema de referencia de coordenadas) proyectado único del proyecto, y criterio de enmascarado de nubes y sombras.
+- **Parámetros técnicos aún sin definir** (no fijarlos por cuenta propia; pedirlos o dejarlos como parámetro en `config/config.yaml`): bandas exactas para el NBR (B8 o B8A frente a B12) y criterio de enmascarado de nubes y sombras.
 
 ### Estado actual de los datos de incendios (revisado 2026-10-18)
 
-- **Temporadas CONAF en `resources/raw/conaf/incendios/`:** 2019_2020, 2020_2021, 2021_2022, 2022_2023, 2023_2024, 2024_2025. No hay 2025_2026 (evento de validación): ese incendio no tiene perímetro CONAF cargado.
+- **Temporadas CONAF en `resources/raw/conaf/incendios/`:** 2019_2020, 2020_2021, 2021_2022, 2022_2023, 2023_2024, 2024_2025. No hay 2025_2026 (evento de validación): ese evento no tiene perímetro CONAF y se delimita con las AOI de EMSR859 ∩ Biobío (regla `build_validation_perimeters`; `fire_id` `emsr2026-001`, `-003`, `-004`).
 - **2019_2020:** los 8 incendios del Biobío salen sin fecha de inicio legible y quedan «fuera» por ese motivo. Pendiente revisar el `.dbf`; no inferir las fechas.
 - **Geometrías inválidas:** varias capas (2019_2020: 5; 2020_2021: 4; 2021_2022: 27) tienen `Ring Self-intersection` (anillos que se cruzan consigo mismos). El área calculada no cambia al repararlas, pero **no se reparan en silencio**: el catálogo conserva el incendio y anota «geometría inválida sin reparar». Decidir con el usuario si se repara (`make_valid`) antes de usarlas en operaciones espaciales.
 - **Identificador:** 2024_2025 no trae columna de id; el catálogo usa `fila-N` (posición en el archivo). `fire_id` = `bio{año de inicio de la temporada}-{correlativo}`.
 - **Región:** se filtra por `CODREG` = 8 (la columna `REGION` en texto es inconsistente); el nombre solo se usa si falta el código.
-- **CRS de cálculo de áreas:** EPSG:32719 (UTM 19S, el de los perímetros) como valor **provisorio**; el CRS único del proyecto sigue sin definir.
+- **CRS único del proyecto:** EPSG:32719 (UTM 19S), decidido en el ADR-0021 (2026-10-29). Los vectores en otros CRS (SIT 32718, EMSR859 4326, límites 3857) se reproyectan de forma explícita.
 - **Nubosidad pre/post:** no implementada (requiere Earth Engine). Las columnas `nubosidad_*` y `escena_*` del catálogo están vacías y los incendios «dentro» llevan el motivo «nubosidad pendiente de revisión». La HU-00.2 no está cerrada hasta resolverlo.
 
 ## 5. Entorno Python (sin Anaconda)
@@ -113,7 +113,7 @@ Se sigue la estructura recomendada por la documentación de Snakemake (Mölder e
 - **Todos los scripts viven en `workflow/scripts/`** (no hay carpeta `scripts/` en la raíz) y se nombran `NN_verbo_objeto.py`, con el mismo prefijo `NN` de la etapa (`NN_etapa.smk`) que los llama; `00_` es para preparación del entorno, que no es una regla. La lógica va en `src/burnsev/`; el script solo lee `snakemake.input/params`, llama a `src` y escribe.
 - **Preferir `script:`** para lógica en Python. Usar `shell:` solo para llamadas cortas a herramientas externas. La lógica no trivial va en `src/burnsev/`, no dentro del `Snakefile`.
 - **`rule all`** al inicio del `Snakefile`, con los productos finales como entrada.
-- **Wildcards** (comodines que parametrizan una regla, como `{fire_id}`): restringirlos con `wildcard_constraints` para evitar coincidencias ambiguas. La lista de incendios sale de `fires.tsv`, no de listas escritas en el código. Ese archivo **lo genera la regla `build_fire_catalog`** en `results/catalogo/fires.tsv` (columnas `fire_id`, `fecha_inicio`, `fecha_termino`, `role`); no se edita a mano. Hoy solo contiene incendios de calibración.
+- **Wildcards** (comodines que parametrizan una regla, como `{fire_id}`): restringirlos con `wildcard_constraints` para evitar coincidencias ambiguas. La lista de incendios sale de `fires.tsv`, no de listas escritas en el código. Ese archivo **lo genera la regla `build_fire_catalog`** en `results/catalogo/fires.tsv` (columnas `fire_id`, `fecha_inicio`, `fecha_termino`, `role`); no se edita a mano. Solo contiene incendios de calibración. Los de validación van en `results/catalogo/fires_validacion.tsv` (regla `build_validation_perimeters`, `role` = `validacion`), con su propia cadena de reglas en `08_validacion.smk`.
 - **Intermedios grandes** (rásteres completos por escena) marcados con `temp()` (se borran al dejar de ser necesarios). Salidas costosas de recalcular, como los umbrales finales, pueden marcarse con `protected()`.
 - **Pasos con Earth Engine:** son remotos y no deterministas por naturaleza (la colección puede actualizarse). Se aíslan en reglas propias (`localrules` si no consumen CPU local), registran en el log la fecha, el ID de la colección y los filtros usados, y su salida se trata como un dato de entrada versionado por manifiesto (ver sección 8).
 - **Dependencias dinámicas** (por ejemplo, cuántos incendios pasan el filtro de nubes): resolver con `checkpoint`, no con código fuera de las reglas.
@@ -227,7 +227,7 @@ Si falta la procedencia de un dato, **no usarlo en resultados** hasta registrarl
 ### 8.6 Calidad y trazabilidad de los datos
 
 - **Validaciones obligatorias al ingresar un dato:** CRS declarado, extensión dentro de la zona esperada, rango de valores plausible, porcentaje de píxeles sin dato y de nubes/sombras.
-- **Separación estricta de roles:** los incendios de calibración (2020–2025) y el de validación (enero 2026) se distinguen por la columna `role` de `results/catalogo/fires.tsv`. Ninguna regla de calibración debe leer datos del evento de validación (se prueba con una prueba automática; ver sección 9).
+- **Separación estricta de roles:** los incendios de calibración (2020–2025) y el de validación (enero 2026) se distinguen por la columna `role` y viven en archivos separados (`results/catalogo/fires.tsv` y `results/catalogo/fires_validacion.tsv`). Ninguna regla de calibración debe leer datos del evento de validación (se prueba con una prueba automática; ver sección 9).
 - **Los perímetros CONAF** se usan solo para delimitar. Ningún cálculo de exactitud puede tomarlos como referencia.
 - **Datos personales:** el proyecto no los requiere. Si apareciera alguno en algún producto, no copiarlo a resultados.
 
@@ -285,6 +285,7 @@ Fuentes que sustentan las decisiones de las secciones 5 a 9. **Verificar la refe
 - Wilson, G., Bryan, J., Cranston, K., Kitzes, J., Nederbragt, L., & Teal, T. K. (2017). Good enough practices in scientific computing. *PLOS Computational Biology, 13*(6), e1005510. (Organización de proyectos, datos, código, control de versiones.)
 - Mölder, F., Jablonski, K. P., Letcher, B., et al. (2021). Sustainable data analysis with Snakemake. *F1000Research, 10*, 33. (Estructura recomendada y buenas prácticas de Snakemake.)
 - Köster, J., & Rahmann, S. (2012). Snakemake—a scalable bioinformatics workflow engine. *Bioinformatics, 28*(19), 2520–2522.
+- Snyder, J. P. (1987). *Map Projections: A Working Manual*. USGS Professional Paper 1395. (Factores de escala de UTM, respaldo del ADR-0021.) [POR VERIFICAR]
 - Wilkinson, M. D., et al. (2016). The FAIR Guiding Principles for scientific data management and stewardship. *Scientific Data, 3*, 160018. (Datos localizables, accesibles, interoperables y reutilizables: sustento de manifiestos y metadatos.)
 - Documentos normativos oficiales de Python: PEP 8 (estilo), PEP 484 (anotaciones de tipos) y PEP 621 (metadatos en `pyproject.toml`). Sirven como respaldo de convenciones de código, no como respaldo científico.
 - Olofsson, P., et al. (2014); Key, C. H., & Benson, N. C. (2006); Miller, J. D., & Thode, A. E. (2007); Soverel, N. O., et al. (2010); Otsu (1979); Silverman (1986): ver claves BibTeX existentes en `referencias.bib`.
