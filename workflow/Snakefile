@@ -18,7 +18,7 @@ include: "rules/04_indices.smk"        # GEE: dNBR, RdNBR, BAI, MIRBI por incend
 include: "rules/05_estadistica.smk"    # valores de píxel, estadísticos e histogramas por índice y estrato
 include: "rules/06_multimodalidad.smk"  # Silverman, dip y BIC por índice y estrato; decisión Otsu/KDE vs percentiles
 # include: "rules/07_umbrales.smk"     # Otsu multinivel y KDE
-# include: "rules/08_validacion.smk"   # EMSR859 / GeoCBI
+include: "rules/08_validacion.smk"     # evento de validación: zona EMSR859 ∩ Biobío, nubosidad e índices (ADR-0020)
 
 
 rule all:
@@ -34,3 +34,5 @@ rule all:
         f"{RES}/tables/suficiencia_estratos.csv",
         productos_estadistica,
         productos_multimodalidad,
+        f"{RES}/emsr859_spike_hu041.md",
+        f"{INT}/validacion/perimetros_validacion.gpkg",

@@ -16,7 +16,17 @@ PENDING = "[POR VERIFICAR]"
 
 params = snakemake.params
 logger = setup_logging(snakemake.log[0], dict(params))
-sources = params.sources  # subcarpeta de raw_conaf -> {fuente, url}
+sources = params.sources  # ruta relativa a rutas.raw -> {fuente, url, ...}
+
+
+def source_of(relative: Path) -> dict:
+    """Entrada de ``fuentes_raw`` cuyo prefijo de ruta es el más largo."""
+    matches = [
+        key
+        for key in sources
+        if relative.as_posix() == key or relative.as_posix().startswith(f"{key}/")
+    ]
+    return sources[max(matches, key=len)] if matches else {}
 
 
 def sha256_of(path: Path) -> str:
@@ -30,7 +40,7 @@ def sha256_of(path: Path) -> str:
 rows = []
 for name in snakemake.input:
     path = Path(name)
-    source = sources.get(path.relative_to(params.root).parts[0], {})
+    source = source_of(path.relative_to(params.root))
     rows.append(
         {
             "archivo": path.as_posix(),

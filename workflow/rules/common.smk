@@ -4,7 +4,9 @@ import pandas as pd
 from snakemake.exceptions import WorkflowError
 
 RAW_INC = config["rutas"]["raw_incendios"]
+RAW = config["rutas"]["raw"]
 RAW_CONAF = config["rutas"]["raw_conaf"]
+RAW_EMSR = config["rutas"]["raw_emsr859"]
 RAW_PUNTOS = config["rutas"]["raw_incendios_puntos"]
 EXT_META = config["rutas"]["external_meta"]
 INT = config["rutas"]["interim"]
@@ -36,9 +38,23 @@ def shapefiles_crudos(wildcards=None):
     return [shapefile_de_temporada(t) for t in TEMPORADAS]
 
 
-def archivos_crudos_conaf(wildcards=None):
-    """Todos los archivos bajo rutas.raw_conaf (para el manifiesto sha256)."""
-    return sorted(str(p) for p in Path(RAW_CONAF).rglob("*") if p.is_file())
+def archivos_crudos(wildcards=None):
+    """Todos los archivos bajo rutas.raw (para el manifiesto sha256)."""
+    return sorted(str(p) for p in Path(RAW).rglob("*") if p.is_file())
+
+
+def archivos_emsr859(wildcards=None):
+    """Capas (.shp/.dbf) y tablas resumen del GRA de EMSR859, de todas las AOI."""
+    keep = (".shp", ".dbf", ".shx", ".prj", ".xlsx")
+    return sorted(
+        str(p) for p in Path(RAW_EMSR).glob("AOI*/*") if p.suffix in keep
+    )
+
+
+def archivos_regiones(wildcards=None):
+    """Shapefile de regiones con sus archivos compañeros."""
+    shp = Path(config["rutas"]["regiones"])
+    return sorted(str(p) for p in shp.parent.glob(f"{shp.stem}.*"))
 
 
 def stats_de_incendios(wildcards):
@@ -92,6 +108,18 @@ def productos_estadistica(wildcards=None):
         f"{RES}/figures/histogramas_indice_estrato.png",
         f"{RES}/figures/cajas_indice_estrato.png",
         f"{RES}/figures/panorama_incendios.png",
+    ]
+
+
+def productos_validacion(wildcards=None):
+    """Índices exportados de los incendios de validación usables (tras su revisión)."""
+    path = checkpoints.review_validation_cloudiness.get().output.usability
+    usable = pd.read_csv(path).query("estado == 'usable'")
+    fechas = pd.to_datetime(usable["fecha_post"]).dt.strftime("%Y%m%d")
+    prod = config["indices_export"]["producto"]
+    return [
+        f"{PROC}/validacion/indices/{prod}_{fire_id}_indices_{fecha}.tif"
+        for fire_id, fecha in zip(usable["fire_id"], fechas, strict=True)
     ]
 
 
